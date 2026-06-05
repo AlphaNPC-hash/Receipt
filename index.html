@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>ใบเสร็จค่าเช่า — บ้านพักวีรญา</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Noto+Serif+Thai:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Noto+Serif+Thai:wght@700;900&family=Parisienne&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#0f2a52;--gold:#b8952a;--gold-lt:#d4af5a;--red:#b92b2b;
@@ -60,13 +60,13 @@ body{
 }
 
 /* header */
-.hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid var(--gold);}
-.logo{
-  width:44px;height:44px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,var(--navy),#2563a8);
-  display:flex;align-items:center;justify-content:center;
+.hdr{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid var(--gold);flex-wrap:wrap;}
+.logo-script{
+  flex-shrink:0;
+  width:210px;
+  height:68px;
+  display:flex;align-items:center;
 }
-.logo span{font-family:'Noto Serif Thai',serif;font-size:17px;font-weight:900;color:var(--gold-lt);}
 .hdr-txt{flex:1;min-width:0;}
 .hdr-txt h1{font-family:'Noto Serif Thai',serif;font-size:17px;font-weight:900;color:var(--navy);}
 .hdr-txt p{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-top:2px;}
@@ -183,6 +183,19 @@ tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;
   @page{margin:8mm;size:A4 portrait;}
 }
 
+
+/* readonly calculated fields */
+span.ft.amt {
+  display:block;
+  color:var(--navy);
+  font-weight:700;
+  font-size:12px;
+  text-align:right;
+  padding:0 2px;
+  cursor:default;
+  user-select:none;
+  opacity:.85;
+}
 </style>
 </head>
 <body>
@@ -194,10 +207,37 @@ tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;
 
     <!-- HEADER -->
     <div class="hdr">
-      <div class="logo"><span>วร</span></div>
+      <div class="logo-script">
+    <svg viewBox="0 0 220 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="220" y2="72" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#f0d878"/>
+          <stop offset="50%" stop-color="#d4af5a"/>
+          <stop offset="100%" stop-color="#a07820"/>
+        </linearGradient>
+      </defs>
+      <!-- Swash underline -->
+      <path d="M30 52 Q110 62 190 52" stroke="url(#lg)" stroke-width="1" fill="none" opacity=".55"/>
+      <!-- Corner diamonds -->
+      <path d="M8 36 L13 30 L18 36 L13 42Z" fill="url(#lg)" opacity=".45"/>
+      <path d="M202 36 L207 30 L212 36 L207 42Z" fill="url(#lg)" opacity=".45"/>
+      <!-- Main script -->
+      <text x="110" y="46" text-anchor="middle"
+        font-family="Parisienne,cursive" font-size="38"
+        fill="url(#lg)">Weeraya</text>
+      <!-- Divider -->
+      <line x1="50" y1="58" x2="92" y2="58" stroke="#d4af5a" stroke-width=".6" opacity=".4"/>
+      <circle cx="110" cy="58" r="1.5" fill="#d4af5a" opacity=".5"/>
+      <line x1="128" y1="58" x2="170" y2="58" stroke="#d4af5a" stroke-width=".6" opacity=".4"/>
+      <!-- Tagline -->
+      <text x="110" y="70" text-anchor="middle"
+        font-family="Josefin Sans,sans-serif" font-size="7"
+        fill="#d4af5a" letter-spacing="3" opacity=".75">RESORT &amp; RESIDENCE</text>
+    </svg>
+  </div>
       <div class="hdr-txt">
         <h1>ใบเสร็จรับเงินค่าเช่า</h1>
-        <p>Official Rent Receipt &nbsp;·&nbsp; บ้านพักวีรญา</p>
+        <p>Official Rent Receipt</p>
       </div>
       <div class="hdr-date">
         <div class="lbl">วันที่ / DATE</div>
@@ -235,21 +275,21 @@ tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;
           <td style="text-align:center;color:#ccc;">—</td>
           <td style="text-align:center;color:#ccc;">—</td>
           <td><div class="il"><input type="checkbox" id="chkRent" checked><span><span class="inm">ค่าเช่า</span><span class="ien"> /Rent</span></span></div></td>
-          <td><input class="ft amt" id="rentAmt" type="number" placeholder="กรอกค่าเช่า" oninput="calcTotal()"></td>
+          <td><input class="ft amt" id="rentAmt" type="number" placeholder="ใส่จำนวน" oninput="calcTotal()"></td>
         </tr>
         <tr class="r-meter">
-          <td><input class="ft" id="waterPrev" type="number" placeholder="0042"></td>
-          <td><input class="ft" id="waterLast" type="number" placeholder="0046"></td>
+          <td><input class="ft" id="waterPrev" type="number" placeholder="ใส่จำนวน"></td>
+          <td><input class="ft" id="waterLast" type="number" placeholder="ใส่จำนวน"></td>
           <td><span class="ub" id="waterUnit">–</span></td>
           <td><div class="il"><input type="checkbox" id="chkWater" checked><span><span class="inm">ค่าน้ำ</span><span class="ien"> /Water</span><span class="isb">16 บาท/หน่วย</span></span></div></td>
-          <td><input class="ft amt" id="waterAmt" type="number" placeholder="0" oninput="calcTotal()"></td>
+          <td><span class="ft amt" id="waterAmt" style="display:block;text-align:right;">0</span></td>
         </tr>
         <tr class="r-meter">
-          <td><input class="ft" id="elecPrev" type="number" placeholder="02056"></td>
-          <td><input class="ft" id="elecLast" type="number" placeholder="02201"></td>
+          <td><input class="ft" id="elecPrev" type="number" placeholder="ใส่จำนวน"></td>
+          <td><input class="ft" id="elecLast" type="number" placeholder="ใส่จำนวน"></td>
           <td><span class="ub" id="elecUnit">–</span></td>
           <td><div class="il"><input type="checkbox" id="chkElec" checked><span><span class="inm">ค่าไฟ</span><span class="ien"> /Electric</span><span class="isb">8 บาท/หน่วย</span></span></div></td>
-          <td><input class="ft amt" id="elecAmt" type="number" placeholder="0" oninput="calcTotal()"></td>
+          <td><span class="ft amt" id="elecAmt" style="display:block;text-align:right;">0</span></td>
         </tr>
         <tr class="r-svc">
           <td colspan="3" style="text-align:center;font-size:10px;color:var(--muted);font-style:italic;">เหมาจ่าย</td>
@@ -275,9 +315,9 @@ tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;
         <div class="bt">ช่องทางชำระเงิน / Payment</div>
         <div class="bn">⚠ ชำระภายในวันที่ 1–5 ของทุกเดือน</div>
         <div class="bfi">
-          <input id="bankName"  value="ธนาคารกรุงเทพ">
-          <input id="bankAcct"  value="041-0-579189">
-          <input id="bankOwner" value="นายสมชาย ศรีนันทา">
+          <input id="bankName"  value="ธนาคารกรุงไทย">
+          <input id="bankAcct"  value="665-6-72472-8">
+          <input id="bankOwner" value="บุศญา ศรีนันทา">
         </div>
       </div>
       <div class="sig-blk">
@@ -312,11 +352,11 @@ function calcUnits(p,l,u){
   if(!pv&&!lv){el.textContent='–';el.style.color='var(--navy)';return;}
   if(lv>=pv){
     const d=lv-pv; el.textContent=d; el.style.color='var(--navy)';
-    if(u==='waterUnit') document.getElementById('waterAmt').value=d*WATER_RATE;
-    else                document.getElementById('elecAmt').value =d*ELEC_RATE;
+    if(u==='waterUnit') document.getElementById('waterAmt').textContent=(d*WATER_RATE).toLocaleString('th-TH');
+    else                document.getElementById('elecAmt').textContent =(d*ELEC_RATE).toLocaleString('th-TH');
   }else{el.textContent='⚠';el.style.color='#b92b2b';
-    if(u==='waterUnit') document.getElementById('waterAmt').value='';
-    else                document.getElementById('elecAmt').value='';
+    if(u==='waterUnit') document.getElementById('waterAmt').textContent='0';
+    else                document.getElementById('elecAmt').textContent ='0';
   }
   calcTotal();
 }
@@ -324,10 +364,15 @@ function calcUnits(p,l,u){
 ['elecPrev','elecLast'].forEach(id=>document.getElementById(id).addEventListener('input',()=>calcUnits('elecPrev','elecLast','elecUnit')));
 
 // ── TOTAL ──
+function getAmt(id){
+  const el=document.getElementById(id);
+  // span uses textContent, input uses value
+  return parseFloat(el.tagName==='SPAN'?el.textContent:el.value)||0;
+}
 function calcTotal(){
   const rows=[['rentAmt','chkRent'],['waterAmt','chkWater'],['elecAmt','chkElec'],['netAmt','chkNet'],['feeAmt','chkFee']];
   let t=0;
-  rows.forEach(([a,c])=>{ if(document.getElementById(c).checked) t+=parseFloat(document.getElementById(a).value)||0; });
+  rows.forEach(([a,c])=>{ if(document.getElementById(c).checked) t+=getAmt(a); });
   document.getElementById('totalAmt').textContent=t.toLocaleString('th-TH');
   document.getElementById('totalWords').textContent=bahtText(t);
 }
@@ -362,7 +407,8 @@ function toggleSig(){
 // ── RESET ──
 function resetForm(){
   if(!confirm('ล้างข้อมูลทั้งหมด?'))return;
-  ['rentAmt','waterPrev','waterLast','elecPrev','elecLast','waterAmt','elecAmt','feeAmt','roomNo'].forEach(id=>document.getElementById(id).value='');
+  ['rentAmt','waterPrev','waterLast','elecPrev','elecLast','feeAmt','roomNo'].forEach(id=>document.getElementById(id).value='');
+  ['waterAmt','elecAmt'].forEach(id=>document.getElementById(id).textContent='0');
   ['waterUnit','elecUnit'].forEach(id=>{document.getElementById(id).textContent='–';document.getElementById(id).style.color='var(--navy)';});
   ['chkRent','chkWater','chkElec','chkNet'].forEach(id=>document.getElementById(id).checked=true);
   document.getElementById('chkFee').checked=false;
