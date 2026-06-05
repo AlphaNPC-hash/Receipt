@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>ใบเสร็จค่าเช่า — บ้านพักวีรญา</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Noto+Serif+Thai:wght@700;900&family=Parisienne&display=swap" rel="stylesheet">
@@ -337,7 +337,6 @@ span.ft.amt {
       </div>
     </div>
 
-    <div class="wmf">เอกสารออกโดย บ้านพักวีรญา · 88 ม.8 ต.นาทราย อ.เมือง จ.นครพนม &nbsp;|&nbsp; ห้ามแก้ไขดัดแปลงโดยไม่ได้รับอนุญาต</div>
   </div>
 </div>
 
@@ -619,13 +618,7 @@ function closeOverlayAndScroll() {
   document.getElementById('ss-overlay').classList.remove('show');
   // Scroll receipt into view smoothly
   const rec = document.getElementById('receipt');
-  // Hide controls temporarily for cleaner screenshot
-  const ctrl = document.querySelector('.controls');
-  ctrl.style.display = 'none';
   rec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // Restore controls after 5 seconds
-  setTimeout(function() { ctrl.style.display = ''; }, 5000);
-  toast('📷 พร้อมแล้ว! กดปุ่มข้าง+Volume ขึ้น เพื่อ Screenshot');
 }
 
 
