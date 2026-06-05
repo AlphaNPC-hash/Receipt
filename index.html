@@ -7,8 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <title>ใบเสร็จค่าเช่า — บ้านพักวีรญา</title>
 <!-- fonts loaded via JS after document ready -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 :root {
   --navy:   #0f2a52;
@@ -217,10 +216,24 @@ body {
 
 /* ── PRINT ── */
 @media print {
-  body { background:white;padding:0; }
-  .controls,.sig-btn { display:none!important; }
-  #receipt { box-shadow:none;max-width:100%; }
-  .field-table,.prop-input,.meta-cell input,.bank-fields input,.header-date input { border-color:transparent!important; }
+  * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  html, body { margin:0 !important; padding:0 !important; background:white !important; }
+  body > *:not(#receipt) { display:none !important; }
+  .controls, .sig-btn, #toast { display:none !important; }
+  #receipt {
+    box-shadow:none !important;
+    width:100% !important;
+    max-width:100% !important;
+    margin:0 !important;
+    border-radius:0 !important;
+    page-break-inside:avoid;
+  }
+  .field-table, .prop-input, .meta-cell input,
+  .bank-fields input, .header-date input {
+    border-color:transparent !important;
+    background:transparent !important;
+  }
+  .receipt-inner { padding:16px 20px !important; }
 }
 
 /* ── TOAST ── */
@@ -241,8 +254,7 @@ body {
 
 <div class="controls">
   <button class="btn btn-reset" onclick="resetForm()">🔄 ล้างข้อมูล</button>
-  <button class="btn btn-save"  onclick="shareImage()" id="btnSave">📷 บันทึก / แชร์รูป</button>
-  <button class="btn btn-pdf"   onclick="sharePDF()"   id="btnPDF">📄 บันทึก / พิมพ์ PDF</button>
+  <button class="btn btn-pdf"   onclick="doPrint()"   id="btnPDF">🖨️ พิมพ์ / บันทึก PDF</button>
 </div>
 
 <div id="receipt">
@@ -495,227 +507,33 @@ function resetForm() {
   showToast('✅ ล้างข้อมูลแล้ว');
 }
 
-// ── LOAD FONTS INLINE (avoids cross-origin blank render) ──
-async function loadFontsInline() {
-  if (window._fontsLoaded) return;
-  // Wait for document fonts to be ready
-  if (document.fonts && document.fonts.ready) {
-    await document.fonts.ready;
-  }
-  window._fontsLoaded = true;
-}
+// ── PRINT / PDF / SAVE ──
+// Uses native browser print → works on ALL platforms without canvas issues
+// iOS Safari: Share → Save to Files / AirPrint
+// Android Chrome: Save as PDF
+// Desktop: Print dialog / Save PDF
 
-// ── BUILD CANVAS ──
-async function buildCanvas() {
-  // Ensure fonts ready
-  await loadFontsInline();
+function doPrint() {
+  // Hide controls before print
+  document.querySelector('.controls').style.display = 'none';
+  document.getElementById('sigBtn').style.display   = 'none';
 
-  const src   = document.getElementById('receipt');
-  const srcW  = src.scrollWidth;
-  const srcH  = src.scrollHeight;
+  // Small delay so browser applies display:none before print
+  setTimeout(function() {
+    window.print();
 
-  // Clone
-  const clone = src.cloneNode(true);
-  clone.style.cssText = [
-    'position:fixed', 'top:0', 'left:0',
-    'width:' + srcW + 'px',
-    'z-index:-9999', 'visibility:hidden', 'pointer-events:none',
-    'background:#fffdf7'
-  ].join(';');
-  document.body.appendChild(clone);
-
-  // inputs → spans
-  clone.querySelectorAll('input[type="text"],input[type="number"],textarea').forEach(el => {
-    const span = document.createElement('span');
-    span.textContent = el.value || '';
-    const cs = window.getComputedStyle(el);
-    span.style.cssText = 'font-family:' + cs.fontFamily
-      + ';font-size:' + cs.fontSize
-      + ';font-weight:' + cs.fontWeight
-      + ';color:' + cs.color
-      + ';display:inline;background:transparent;border:none;outline:none;padding:0;margin:0;';
-    el.parentNode.replaceChild(span, el);
-  });
-
-  // checkboxes → symbols
-  clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
-    const orig    = el.id ? document.getElementById(el.id) : el;
-    const checked = orig ? orig.checked : el.checked;
-    const span    = document.createElement('span');
-    span.textContent = checked ? '☑' : '☐';
-    span.style.cssText = 'font-size:14px;color:#0f2a52;line-height:1;';
-    el.parentNode.replaceChild(span, el);
-  });
-
-  // hide sig button
-  const sb = clone.querySelector('#sigBtn');
-  if (sb) sb.remove();
-
-  // sync sig image
-  const origImg  = document.getElementById('sigImg');
-  const cloneImg = clone.querySelector('#sigImg');
-  if (origImg && cloneImg) {
-    if (sigOn && origImg.src) {
-      cloneImg.src     = origImg.src;
-      cloneImg.style.display = 'block';
+    // Restore controls after print dialog closes
+    // Use afterprint event for desktop; fallback timeout for mobile
+    function restore() {
+      document.querySelector('.controls').style.display = '';
+      document.getElementById('sigBtn').style.display   = '';
+    }
+    if ('onafterprint' in window) {
+      window.onafterprint = function() { restore(); window.onafterprint = null; };
     } else {
-      cloneImg.style.display = 'none';
+      setTimeout(restore, 3000);
     }
-  }
-
-  // Small delay so browser paints the clone
-  await new Promise(r => setTimeout(r, 150));
-
-  try {
-    const canvas = await html2canvas(clone, {
-      scale           : 2,
-      backgroundColor : '#fffdf7',
-      useCORS         : false,
-      allowTaint      : false,
-      logging         : false,
-      scrollX         : 0,
-      scrollY         : 0,
-      width           : srcW,
-      height          : srcH,
-      windowWidth     : srcW,
-      windowHeight    : srcH,
-      onclone         : function(doc) {
-        // Force background on receipt clone inside html2canvas shadow doc
-        const r = doc.getElementById('receipt');
-        if (r) r.style.background = '#fffdf7';
-      }
-    });
-    return canvas;
-  } finally {
-    document.body.removeChild(clone);
-  }
-}
-
-// ── PLATFORM ──
-const isIOS     = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-const isAndroid = /Android/.test(navigator.userAgent);
-
-// Web Share API ใช้ได้เฉพาะเมื่อไม่อยู่ใน iframe เท่านั้น
-const inIframe  = (function() {
-  try { return window.self !== window.top; } catch(e) { return true; }
-})();
-const canShare  = !inIframe && !!navigator.share && !!window.File;
-
-function setLoading(btnId, loading, defaultText) {
-  const b = document.getElementById(btnId);
-  if (!b) return;
-  b.disabled = loading;
-  b.textContent = loading ? '⏳ กำลังสร้าง...' : defaultText;
-}
-
-// ── SHARE / SAVE IMAGE ──
-async function shareImage() {
-  document.activeElement && document.activeElement.blur();
-  setLoading('btnSave', true, '📷 บันทึก / แชร์รูป');
-  try {
-    const canvas = await buildCanvas();
-    const period = document.getElementById('period').value || 'receipt';
-    const room   = document.getElementById('roomNo').value || '';
-    const fname  = 'ใบเสร็จ_' + (room ? room + '_' : '') + period + '.png';
-
-    if (canShare) {
-      // Web Share API (ไม่ใช่ iframe)
-      await new Promise((res, rej) => {
-        canvas.toBlob(async blob => {
-          try {
-            const file = new File([blob], fname, { type: 'image/png' });
-            await navigator.share({ files: [file], title: 'ใบเสร็จค่าเช่า' });
-            showToast('✅ แชร์สำเร็จ!');
-            res();
-          } catch(e) {
-            if (e.name !== 'AbortError') rej(e); else res();
-          }
-        }, 'image/png');
-      });
-      return;
-    }
-
-    // Fallback สำหรับทุก platform (รวมถึงตอนอยู่ใน iframe)
-    canvas.toBlob(blob => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fname;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 3000);
-
-      if (isIOS) {
-        showToast('📥 ไฟล์ถูกดาวน์โหลด — เปิดจาก Files แล้วแชร์/บันทึกได้');
-      } else {
-        showToast('💾 บันทึกรูปเรียบร้อย!');
-      }
-    }, 'image/png');
-  } catch(e) {
-    showToast('❌ ' + (e.message || 'เกิดข้อผิดพลาด')); console.error(e);
-  } finally {
-    setLoading('btnSave', false, '📷 บันทึก / แชร์รูป');
-  }
-}
-
-// ── SHARE / SAVE PDF ──
-async function sharePDF() {
-  document.activeElement && document.activeElement.blur();
-  setLoading('btnPDF', true, '📄 บันทึก / พิมพ์ PDF');
-  try {
-    const canvas  = await buildCanvas();
-    const period  = document.getElementById('period').value || 'receipt';
-    const room    = document.getElementById('roomNo').value || '';
-    const fname   = 'ใบเสร็จ_' + (room ? room + '_' : '') + period + '.pdf';
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
-
-    const { jsPDF } = window.jspdf;
-    const a4w = 210, margin = 10;
-    const usable = a4w - margin * 2;
-    const ratio  = usable / (canvas.width / 3);
-    const pdfH   = (canvas.height / 3) * ratio;
-    const doc    = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    doc.addImage(imgData, 'JPEG', margin, margin, usable, pdfH);
-
-    const pdfBlob = doc.output('blob');
-
-    if (canShare) {
-      // Web Share API (ไม่ใช่ iframe)
-      try {
-        const file = new File([pdfBlob], fname, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'ใบเสร็จค่าเช่า' });
-          showToast('✅ แชร์ PDF สำเร็จ!');
-          return;
-        }
-      } catch(e) {
-        if (e.name === 'AbortError') return;
-      }
-    }
-
-    // Fallback สำหรับทุก platform (รวมถึงตอนอยู่ใน iframe)
-    const url = URL.createObjectURL(pdfBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fname;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
-
-    if (isIOS) {
-      showToast('📥 PDF ถูกดาวน์โหลด — เปิดจาก Files แล้วพิมพ์/แชร์ได้');
-    } else {
-      showToast('📄 บันทึก PDF เรียบร้อย!');
-    }
-  } catch(e) {
-    showToast('❌ ' + (e.message || 'เกิดข้อผิดพลาด')); console.error(e);
-  } finally {
-    setLoading('btnPDF', false, '📄 บันทึก / พิมพ์ PDF');
-  }
+  }, 100);
 }
 
 // ── TOAST ──
@@ -736,19 +554,9 @@ function setDefaults() {
                   'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
   document.getElementById('period').value = months[now.getMonth()] + ' ' + yy;
 }
-// Load fonts then init
-(async function() {
-  // Inject Google Fonts dynamically so we can wait for them
-  const link = document.createElement('link');
-  link.rel  = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Serif+Thai:wght@400;600;700;900&display=swap';
-  document.head.appendChild(link);
-  // Wait for fonts
-  if (document.fonts && document.fonts.ready) await document.fonts.ready;
-  window._fontsLoaded = true;
-  setDefaults();
-  calcTotal();
-})();
+setDefaults();
+calcTotal();
+
 </script>
 </body>
 </html>
