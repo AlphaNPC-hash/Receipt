@@ -198,7 +198,6 @@ span.ft.amt {
   opacity:.85;
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -433,78 +432,26 @@ const inIframe=(function(){try{return window.self!==window.top;}catch(e){return 
 const canShare=!inIframe&&!!navigator.share&&!!window.File;
 
 // ── PRINT / PDF ──
-async function savePDF() {
-  const btn = document.getElementById('btnSave');
-  btn.disabled = true; btn.textContent = '⏳ กำลังสร้าง...';
-  try {
-    // Prepare receipt for capture: freeze inputs as text
-    const rec   = document.getElementById('receipt');
-    const fname = buildFilename() + '.pdf';
-
-    // Inline all input values into a printable clone
-    const clone = rec.cloneNode(true);
-    clone.style.cssText = 'position:fixed;top:0;left:0;width:'+rec.offsetWidth+'px;background:#fffdf7;z-index:-9999;visibility:hidden;';
-    document.body.appendChild(clone);
-
-    clone.querySelectorAll('input[type="text"],input[type="number"]').forEach(el => {
-      const orig = el.id ? document.getElementById(el.id) : el;
-      const span = document.createElement('span');
-      span.textContent = orig ? orig.value : el.value;
-      const cs = window.getComputedStyle(el);
-      span.style.cssText = 'font-size:'+cs.fontSize+';font-weight:'+cs.fontWeight+';color:'+cs.color+';font-family:'+cs.fontFamily+';display:inline;';
-      el.parentNode.replaceChild(span, el);
-    });
-    clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
-      const orig = el.id ? document.getElementById(el.id) : el;
-      const span = document.createElement('span');
-      span.textContent = (orig||el).checked ? '☑' : '☐';
-      span.style.cssText = 'font-size:13px;color:#0f2a52;';
-      el.parentNode.replaceChild(span, el);
-    });
-    const sigBtn2 = clone.querySelector('#sigBtn'); if(sigBtn2) sigBtn2.remove();
-    const si = clone.querySelector('#sigImg'), so = document.getElementById('sigImg');
-    if(si&&so){ if(sigOn){si.src=so.src;si.style.display='block';}else si.style.display='none'; }
-
-    await new Promise(r => setTimeout(r, 200));
-
-    // Use html2canvas via CDN
-    let canvas;
-    if (typeof html2canvas !== 'undefined') {
-      canvas = await html2canvas(clone, {scale:2,backgroundColor:'#fffdf7',useCORS:false,allowTaint:false,logging:false});
-    } else {
-      // Fallback: load html2canvas dynamically
-      await new Promise((res,rej)=>{
-        const s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload=res; s.onerror=rej;
-        document.head.appendChild(s);
-      });
-      canvas = await html2canvas(clone, {scale:2,backgroundColor:'#fffdf7',useCORS:false,allowTaint:false,logging:false});
+function savePDF() {
+  const ctrl = document.querySelector('.controls');
+  const sb   = document.getElementById('sigBtn');
+  ctrl.style.display = 'none';
+  sb.style.display   = 'none';
+  const origTitle  = document.title;
+  document.title   = buildFilename();
+  setTimeout(function() {
+    window.print();
+    function restore() {
+      document.title     = origTitle;
+      ctrl.style.display = '';
+      sb.style.display   = '';
     }
-    document.body.removeChild(clone);
-
-    const { jsPDF } = window.jspdf;
-    const imgData = canvas.toDataURL('image/jpeg', 0.92);
-    const a4w=210, margin=10, usable=a4w-margin*2;
-    const ratio = usable/(canvas.width/2);
-    const pdfH  = (canvas.height/2)*ratio;
-    const doc   = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    doc.addImage(imgData,'JPEG',margin,margin,usable,pdfH);
-
-    // Save
-    const blob = doc.output('blob');
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href=url; a.download=fname;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-    toast('💾 บันทึก PDF เรียบร้อย!');
-  } catch(e) {
-    toast('❌ '+e.message); console.error(e);
-  } finally {
-    btn.disabled=false; btn.textContent='💾 บันทึก PDF';
-  }
+    if ('onafterprint' in window) {
+      window.onafterprint = function() { restore(); window.onafterprint = null; };
+    } else {
+      setTimeout(restore, 3000);
+    }
+  }, 120);
 }
 
 function buildFilename() {
