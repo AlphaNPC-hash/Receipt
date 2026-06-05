@@ -40,6 +40,7 @@ body{
 .btn:active{opacity:.75;}
 .btn-reset{background:#fff;color:var(--text);border:1.5px solid #aaa;}
 .btn-pdf  {background:#1a6b3a;color:#fff;}
+.btn-save {background:#7b3f00;color:#fff;}
 
 /* ═══ RECEIPT ═══ */
 #receipt{
@@ -48,7 +49,7 @@ body{
   box-shadow:0 4px 20px rgba(0,0,0,.18);
 }
 .top-bar{height:6px;background:linear-gradient(90deg,var(--navy),var(--gold),var(--gold-lt),var(--navy));}
-.inner{padding:18px 20px 22px;position:relative;}
+.inner{padding:22px 24px 28px;position:relative;}
 
 /* watermark */
 .wm{
@@ -68,7 +69,7 @@ body{
   display:flex;align-items:center;
 }
 .hdr-txt{flex:1;min-width:0;}
-.hdr-txt h1{font-family:'Noto Serif Thai',serif;font-size:17px;font-weight:900;color:var(--navy);}
+.hdr-txt h1{font-family:'Noto Serif Thai',serif;font-size:20px;font-weight:900;color:var(--navy);}
 .hdr-txt p{font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-top:2px;}
 .hdr-date{text-align:right;flex-shrink:0;}
 .hdr-date .lbl{font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:3px;}
@@ -81,13 +82,13 @@ body{
 /* property card */
 .prop{
   background:var(--cream);border:1px solid var(--border);border-left:4px solid var(--navy);
-  border-radius:0 5px 5px 0;padding:10px 12px;margin-bottom:12px;
+  border-radius:0 5px 5px 0;padding:14px 16px;margin-bottom:14px;
   display:flex;flex-direction:column;gap:6px;
 }
 .p-row{display:flex;flex-direction:column;gap:1px;}
 .p-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;}
 .p-inp{
-  font-family:'Sarabun',sans-serif;font-size:12px;font-weight:600;color:var(--navy);
+  font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;color:var(--navy);
   background:transparent;border:none;border-bottom:1px solid transparent;
   outline:none;width:100%;padding:0;
 }
@@ -98,11 +99,11 @@ body{
   display:grid;grid-template-columns:1fr 1fr;margin-bottom:12px;
   border:1.5px solid var(--navy);border-radius:5px;overflow:hidden;
 }
-.mc{padding:8px 12px;background:var(--navy);display:flex;flex-direction:column;gap:2px;}
+.mc{padding:11px 14px;background:var(--navy);display:flex;flex-direction:column;gap:2px;}
 .mc:first-child{border-right:1px solid rgba(255,255,255,.15);}
 .mc label{font-size:9px;font-weight:700;color:var(--gold-lt);letter-spacing:1.5px;text-transform:uppercase;}
 .mc input{
-  font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;color:#fff;
+  font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;color:#fff;
   background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.3);
   outline:none;width:100%;padding:1px 0;
 }
@@ -110,28 +111,28 @@ body{
 .mc input:focus{border-bottom-color:var(--gold-lt);}
 
 /* table */
-table{width:100%;border-collapse:separate;border-spacing:0;font-size:11.5px;border:1.5px solid var(--navy);border-radius:6px;overflow:hidden;}
-th{background:var(--navy);color:#fff;padding:7px 8px;font-size:10px;font-weight:700;letter-spacing:.5px;text-align:center;border:none;}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;border:1.5px solid var(--navy);border-radius:6px;overflow:hidden;}
+th{background:var(--navy);color:#fff;padding:9px 10px;font-size:12px;font-weight:700;letter-spacing:.5px;text-align:center;border:none;}
 th.thl{text-align:left;padding-left:10px;}
-td{border-top:1px solid #e2d9c5;border-right:1px solid #e2d9c5;padding:6px 7px;vertical-align:middle;}
+td{border-top:1px solid #e2d9c5;border-right:1px solid #e2d9c5;padding:9px 10px;vertical-align:middle;}
 td:last-child{border-right:none;}
 tr.r-meter td{background:rgba(255,253,230,.6);}
 tr.r-svc   td{background:rgba(230,240,255,.5);}
 tr.r-fee   td{background:rgba(255,235,235,.4);}
 tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;border-color:transparent!important;padding:9px 10px;}
 
-.ft{border:none;background:transparent;font-family:'Sarabun',sans-serif;font-size:11.5px;color:var(--navy);font-weight:600;padding:0 2px;width:100%;outline:none;text-align:center;}
-.ft.amt{text-align:right;font-size:12px;font-weight:700;}
+.ft{border:none;background:transparent;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--navy);font-weight:600;padding:0 2px;width:100%;outline:none;text-align:center;}
+.ft.amt{text-align:right;font-size:15px;font-weight:700;}
 .ft:focus{background:rgba(37,99,168,.07);border-radius:2px;}
 .il{display:flex;align-items:center;gap:6px;padding-left:2px;}
 .il input[type=checkbox]{accent-color:var(--navy);width:13px;height:13px;flex-shrink:0;}
-.inm{font-weight:600;color:var(--text);}
+.inm{font-weight:600;color:var(--text);font-size:13px;}
 .ien{font-size:10px;color:var(--muted);}
-.isb{font-size:10px;color:var(--muted);display:block;}
-.ub{display:inline-block;font-size:12px;font-weight:800;color:var(--navy);min-width:32px;text-align:center;}
-.tl{font-size:12px;font-weight:700;color:var(--gold-lt);}
-.tw{font-size:10px;color:rgba(255,255,255,.6);margin-top:1px;}
-.ta{font-family:'Noto Serif Thai',serif;font-size:20px;font-weight:900;color:#fff;text-align:right;}
+.isb{font-size:11px;color:var(--muted);display:block;}
+.ub{display:inline-block;font-size:14px;font-weight:800;color:var(--navy);min-width:36px;text-align:center;}
+.tl{font-size:14px;font-weight:700;color:var(--gold-lt);}
+.tw{font-size:12px;color:rgba(255,255,255,.6);margin-top:2px;}
+.ta{font-family:'Noto Serif Thai',serif;font-size:26px;font-weight:900;color:#fff;text-align:right;}
 .ts{font-size:10px;color:var(--gold-lt);text-align:right;font-weight:600;}
 
 /* footer */
@@ -139,7 +140,7 @@ tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;
 .bt{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
 .bn{font-size:10px;color:var(--red);font-weight:600;margin-bottom:5px;}
 .bfi{display:flex;flex-direction:column;gap:4px;}
-.bfi input{font-family:'Sarabun',sans-serif;font-size:12px;font-weight:700;color:var(--red);background:transparent;border:none;border-bottom:1px solid #e0c0c0;outline:none;padding:1px 0;width:100%;}
+.bfi input{font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;color:var(--red);background:transparent;border:none;border-bottom:1px solid #e0c0c0;outline:none;padding:1px 0;width:100%;}
 .bfi input:focus{border-bottom-color:var(--red);}
 .sig-blk{text-align:center;flex-shrink:0;}
 .sig-area{width:120px;height:60px;border-bottom:1.5px solid var(--text);margin-bottom:4px;position:relative;}
@@ -189,7 +190,7 @@ span.ft.amt {
   display:block;
   color:var(--navy);
   font-weight:700;
-  font-size:12px;
+  font-size:15px;
   text-align:right;
   padding:0 2px;
   cursor:default;
@@ -197,6 +198,7 @@ span.ft.amt {
   opacity:.85;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -208,7 +210,7 @@ span.ft.amt {
     <!-- HEADER -->
     <div class="hdr">
       <div class="logo-script">
-    <svg viewBox="0 0 220 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <svg viewBox="0 0 220 68" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
       <defs>
         <linearGradient id="lg" x1="0" y1="0" x2="220" y2="72" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stop-color="#f0d878"/>
@@ -222,17 +224,18 @@ span.ft.amt {
       <path d="M8 36 L13 30 L18 36 L13 42Z" fill="url(#lg)" opacity=".45"/>
       <path d="M202 36 L207 30 L212 36 L207 42Z" fill="url(#lg)" opacity=".45"/>
       <!-- Main script -->
-      <text x="110" y="46" text-anchor="middle"
+      <text x="110" y="42" text-anchor="middle"
         font-family="Parisienne,cursive" font-size="38"
         fill="url(#lg)">Weeraya</text>
       <!-- Divider -->
-      <line x1="50" y1="58" x2="92" y2="58" stroke="#d4af5a" stroke-width=".6" opacity=".4"/>
-      <circle cx="110" cy="58" r="1.5" fill="#d4af5a" opacity=".5"/>
-      <line x1="128" y1="58" x2="170" y2="58" stroke="#d4af5a" stroke-width=".6" opacity=".4"/>
+      <line x1="55" y1="50" x2="96" y2="50" stroke="#d4af5a" stroke-width=".6" opacity=".4"/>
+      <circle cx="110" cy="50" r="1.4" fill="#d4af5a" opacity=".5"/>
+      <line x1="124" y1="50" x2="165" y2="50" stroke="#d4af5a" stroke-width=".6" opacity=".4"/>
       <!-- Tagline -->
-      <text x="110" y="70" text-anchor="middle"
-        font-family="Josefin Sans,sans-serif" font-size="7"
-        fill="#d4af5a" letter-spacing="3" opacity=".75">RESORT &amp; RESIDENCE</text>
+      <text x="110" y="60" text-anchor="middle"
+        font-family="Josefin Sans,sans-serif" font-size="7.5"
+        fill="#d4af5a" letter-spacing="3.5" opacity=".8">RESIDENCE</text>
+
     </svg>
   </div>
       <div class="hdr-txt">
@@ -334,7 +337,8 @@ span.ft.amt {
 <!-- CONTROLS (bottom) -->
 <div class="controls">
   <button class="btn btn-reset" onclick="resetForm()">🔄 ล้างข้อมูล</button>
-  <button class="btn btn-pdf"   onclick="doPrint()" id="btnPDF">🖨️ บันทึก PDF / พิมพ์</button>
+  <button class="btn btn-pdf"   onclick="doPrint()"    id="btnPDF">🖨️ พิมพ์</button>
+  <button class="btn btn-save"  onclick="savePDF()"   id="btnSave">💾 บันทึก PDF</button>
 </div>
 
 <div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--navy);color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap;"></div>
@@ -429,6 +433,80 @@ const inIframe=(function(){try{return window.self!==window.top;}catch(e){return 
 const canShare=!inIframe&&!!navigator.share&&!!window.File;
 
 // ── PRINT / PDF ──
+async function savePDF() {
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true; btn.textContent = '⏳ กำลังสร้าง...';
+  try {
+    // Prepare receipt for capture: freeze inputs as text
+    const rec   = document.getElementById('receipt');
+    const fname = buildFilename() + '.pdf';
+
+    // Inline all input values into a printable clone
+    const clone = rec.cloneNode(true);
+    clone.style.cssText = 'position:fixed;top:0;left:0;width:'+rec.offsetWidth+'px;background:#fffdf7;z-index:-9999;visibility:hidden;';
+    document.body.appendChild(clone);
+
+    clone.querySelectorAll('input[type="text"],input[type="number"]').forEach(el => {
+      const orig = el.id ? document.getElementById(el.id) : el;
+      const span = document.createElement('span');
+      span.textContent = orig ? orig.value : el.value;
+      const cs = window.getComputedStyle(el);
+      span.style.cssText = 'font-size:'+cs.fontSize+';font-weight:'+cs.fontWeight+';color:'+cs.color+';font-family:'+cs.fontFamily+';display:inline;';
+      el.parentNode.replaceChild(span, el);
+    });
+    clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
+      const orig = el.id ? document.getElementById(el.id) : el;
+      const span = document.createElement('span');
+      span.textContent = (orig||el).checked ? '☑' : '☐';
+      span.style.cssText = 'font-size:13px;color:#0f2a52;';
+      el.parentNode.replaceChild(span, el);
+    });
+    const sigBtn2 = clone.querySelector('#sigBtn'); if(sigBtn2) sigBtn2.remove();
+    const si = clone.querySelector('#sigImg'), so = document.getElementById('sigImg');
+    if(si&&so){ if(sigOn){si.src=so.src;si.style.display='block';}else si.style.display='none'; }
+
+    await new Promise(r => setTimeout(r, 200));
+
+    // Use html2canvas via CDN
+    let canvas;
+    if (typeof html2canvas !== 'undefined') {
+      canvas = await html2canvas(clone, {scale:2,backgroundColor:'#fffdf7',useCORS:false,allowTaint:false,logging:false});
+    } else {
+      // Fallback: load html2canvas dynamically
+      await new Promise((res,rej)=>{
+        const s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        s.onload=res; s.onerror=rej;
+        document.head.appendChild(s);
+      });
+      canvas = await html2canvas(clone, {scale:2,backgroundColor:'#fffdf7',useCORS:false,allowTaint:false,logging:false});
+    }
+    document.body.removeChild(clone);
+
+    const { jsPDF } = window.jspdf;
+    const imgData = canvas.toDataURL('image/jpeg', 0.92);
+    const a4w=210, margin=10, usable=a4w-margin*2;
+    const ratio = usable/(canvas.width/2);
+    const pdfH  = (canvas.height/2)*ratio;
+    const doc   = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    doc.addImage(imgData,'JPEG',margin,margin,usable,pdfH);
+
+    // Save
+    const blob = doc.output('blob');
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href=url; a.download=fname;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    toast('💾 บันทึก PDF เรียบร้อย!');
+  } catch(e) {
+    toast('❌ '+e.message); console.error(e);
+  } finally {
+    btn.disabled=false; btn.textContent='💾 บันทึก PDF';
+  }
+}
+
 function buildFilename() {
   const room   = (document.getElementById('roomNo').value  || '').trim();
   const period = (document.getElementById('period').value  || '').trim();
