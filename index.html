@@ -26,10 +26,14 @@ body{
   width:100%;max-width:640px;
   position:sticky;bottom:12px;z-index:100;
   padding:10px 12px;
-  background:rgba(221,213,196,.92);
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  background:rgba(221,213,196,.95);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   border-radius:14px;
-  box-shadow:0 4px 20px rgba(0,0,0,.18);
+  box-shadow:0 4px 24px rgba(0,0,0,.2);
+}
+@media(min-width:600px){
+  .controls{max-width:760px;gap:12px;}
+  .controls .btn{flex:0 1 auto;min-width:160px;}
 }
 .btn{
   font-family:'Sarabun',sans-serif;font-size:13px;font-weight:700;
@@ -88,7 +92,7 @@ body{
 .p-row{display:flex;flex-direction:column;gap:1px;}
 .p-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;}
 .p-inp{
-  font-family:'Sarabun',sans-serif;font-size:14px;font-weight:600;color:var(--navy);
+  font-family:'Sarabun',sans-serif;font-size:16px;font-weight:600;color:var(--navy);
   background:transparent;border:none;border-bottom:1px solid transparent;
   outline:none;width:100%;padding:0;
 }
@@ -121,8 +125,10 @@ tr.r-svc   td{background:rgba(230,240,255,.5);}
 tr.r-fee   td{background:rgba(255,235,235,.4);}
 tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;border-color:transparent!important;padding:9px 10px;}
 
-.ft{border:none;background:transparent;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--navy);font-weight:600;padding:0 2px;width:100%;outline:none;text-align:center;}
-.ft.amt{text-align:right;font-size:15px;font-weight:700;}
+.ft{border:none;background:transparent;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--navy);font-weight:600;padding:0 2px;width:100%;min-width:72px;outline:none;text-align:center;}
+.ft[type="number"]{-moz-appearance:textfield;}
+.ft[type="number"]::-webkit-inner-spin-button,.ft[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+.ft.amt{text-align:right;font-size:15px;font-weight:700;min-width:80px;}
 .ft:focus{background:rgba(37,99,168,.07);border-radius:2px;}
 .il{display:flex;align-items:center;gap:6px;padding-left:2px;}
 .il input[type=checkbox]{accent-color:var(--navy);width:13px;height:13px;flex-shrink:0;}
@@ -140,7 +146,7 @@ tr.r-total td{background:var(--navy);border-top:2px solid var(--gold)!important;
 .bt{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;}
 .bn{font-size:10px;color:var(--red);font-weight:600;margin-bottom:5px;}
 .bfi{display:flex;flex-direction:column;gap:4px;}
-.bfi input{font-family:'Sarabun',sans-serif;font-size:14px;font-weight:700;color:var(--red);background:transparent;border:none;border-bottom:1px solid #e0c0c0;outline:none;padding:1px 0;width:100%;}
+.bfi input{font-family:'Sarabun',sans-serif;font-size:16px;font-weight:700;color:var(--red);background:transparent;border:none;border-bottom:1px solid #e0c0c0;outline:none;padding:1px 0;width:100%;}
 .bfi input:focus{border-bottom-color:var(--red);}
 .sig-blk{text-align:center;flex-shrink:0;}
 .sig-area{width:120px;height:60px;border-bottom:1.5px solid var(--text);margin-bottom:4px;position:relative;}
@@ -198,6 +204,8 @@ span.ft.amt {
   opacity:.85;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -261,14 +269,14 @@ span.ft.amt {
     </div>
 
     <!-- TABLE -->
-    <table>
+    <div class="table-wrap"><table>
       <thead>
         <tr>
-          <th style="width:12%">จดครั้งที่แล้ว</th>
-          <th style="width:12%">จดครั้งล่าสุด</th>
+          <th style="width:15%">จดครั้งที่แล้ว</th>
+          <th style="width:15%">จดครั้งล่าสุด</th>
           <th style="width:9%">หน่วย</th>
           <th class="thl">รายการ</th>
-          <th style="width:16%">จำนวนเงิน (บาท)</th>
+          <th style="width:18%">จำนวนเงิน (บาท)</th>
         </tr>
       </thead>
       <tbody>
@@ -309,7 +317,7 @@ span.ft.amt {
           <td style="border:none;"><div class="ta" id="totalAmt">0</div><div class="ts">บาท / THB</div></td>
         </tr>
       </tbody>
-    </table>
+    </table></div>
 
     <!-- FOOTER -->
     <div class="ftr">
@@ -337,7 +345,7 @@ span.ft.amt {
 <div class="controls">
   <button class="btn btn-reset" onclick="resetForm()">🔄 ล้างข้อมูล</button>
   <button class="btn btn-pdf"   onclick="doPrint()"    id="btnPDF">🖨️ พิมพ์</button>
-  <button class="btn btn-save"  onclick="savePDF()"   id="btnSave">💾 บันทึก PDF</button>
+  <button class="btn btn-save"  onclick="savePDF()"   id="btnSave">📄 สร้าง PDF</button>
 </div>
 
 <div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--navy);color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap;"></div>
@@ -432,26 +440,140 @@ const inIframe=(function(){try{return window.self!==window.top;}catch(e){return 
 const canShare=!inIframe&&!!navigator.share&&!!window.File;
 
 // ── PRINT / PDF ──
-function savePDF() {
-  const ctrl = document.querySelector('.controls');
-  const sb   = document.getElementById('sigBtn');
-  ctrl.style.display = 'none';
-  sb.style.display   = 'none';
-  const origTitle  = document.title;
-  document.title   = buildFilename();
-  setTimeout(function() {
-    window.print();
-    function restore() {
-      document.title     = origTitle;
-      ctrl.style.display = '';
-      sb.style.display   = '';
+async function savePDF() {
+  const btn = document.getElementById('btnSave');
+  btn.disabled = true; btn.textContent = '⏳ กำลังสร้าง PDF...';
+
+  try {
+    const rec  = document.getElementById('receipt');
+    const fname = buildFilename() + '.pdf';
+
+    /* ── 1. Clone receipt ── */
+    const clone = rec.cloneNode(true);
+    clone.style.cssText = [
+      'position:fixed','top:0','left:0',
+      'width:' + rec.offsetWidth + 'px',
+      'background:#fffdf7',
+      'z-index:-9999','visibility:hidden','pointer-events:none'
+    ].join(';');
+    document.body.appendChild(clone);
+
+    /* ── 2. Replace inputs → spans (no tainted canvas) ── */
+    clone.querySelectorAll('input[type="text"],input[type="number"]').forEach(el => {
+      const orig = el.id ? document.getElementById(el.id) : el;
+      const val  = orig ? (orig.value || '') : '';
+      const span = document.createElement('span');
+      span.textContent = val;
+      const cs = window.getComputedStyle(el);
+      /* Force system font — avoids Google Fonts cross-origin blank */
+      span.style.cssText =
+        'display:inline;' +
+        'font-size:'    + cs.fontSize    + ';' +
+        'font-weight:'  + cs.fontWeight  + ';' +
+        'color:'        + cs.color       + ';' +
+        'font-family:Arial,Helvetica,sans-serif;' +
+        'background:transparent;border:none;padding:0;margin:0;';
+      el.parentNode.replaceChild(span, el);
+    });
+
+    /* ── 3. Replace checkboxes → symbols ── */
+    clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
+      const orig    = el.id ? document.getElementById(el.id) : el;
+      const checked = orig ? orig.checked : el.checked;
+      const span    = document.createElement('span');
+      span.textContent = checked ? '☑' : '☐';
+      span.style.cssText = 'font-size:13px;color:#0f2a52;font-family:Arial,sans-serif;';
+      el.parentNode.replaceChild(span, el);
+    });
+
+    /* ── 4. Force ALL text in clone to system font ── */
+    clone.querySelectorAll('*').forEach(el => {
+      const cs = window.getComputedStyle(el);
+      if (cs.fontFamily && cs.fontFamily.includes('Sarabun')) {
+        el.style.fontFamily = 'Arial,Helvetica,sans-serif';
+      }
+      if (cs.fontFamily && (cs.fontFamily.includes('Noto') || cs.fontFamily.includes('Parisienne'))) {
+        el.style.fontFamily = 'Georgia,serif';
+      }
+    });
+
+    /* ── 5. Hide sig button, sync sig image ── */
+    const sb2 = clone.querySelector('#sigBtn'); if (sb2) sb2.remove();
+    const si  = clone.querySelector('#sigImg');
+    const so  = document.getElementById('sigImg');
+    if (si && so) {
+      if (sigOn) { si.src = so.src; si.style.display = 'block'; }
+      else         si.style.display = 'none';
     }
-    if ('onafterprint' in window) {
-      window.onafterprint = function() { restore(); window.onafterprint = null; };
-    } else {
-      setTimeout(restore, 3000);
+
+    /* ── 6. Wait for paint ── */
+    await new Promise(r => setTimeout(r, 250));
+
+    /* ── 7. Render to canvas ── */
+    const canvas = await html2canvas(clone, {
+      scale          : 2,
+      backgroundColor: '#fffdf7',
+      useCORS        : false,
+      allowTaint     : false,
+      logging        : false,
+      scrollX        : 0,
+      scrollY        : 0,
+      onclone: function(doc) {
+        const r = doc.getElementById('receipt');
+        if (r) r.style.background = '#fffdf7';
+      }
+    });
+    document.body.removeChild(clone);
+
+    /* ── 8. Build PDF ── */
+    const { jsPDF } = window.jspdf;
+    const imgData   = canvas.toDataURL('image/jpeg', 0.92);
+    const a4w = 210, margin = 8, usable = a4w - margin * 2;
+    const ratio = usable / (canvas.width / 2);
+    const pdfH  = (canvas.height / 2) * ratio;
+    const doc   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    doc.addImage(imgData, 'JPEG', margin, margin, usable, pdfH);
+
+    /* ── 9. Deliver PDF ── */
+    const blob = doc.output('blob');
+    const url  = URL.createObjectURL(blob);
+
+    /* Web Share API — iOS Share Sheet, Android Share */
+    const inIframe = (function(){ try{ return window.self!==window.top; }catch(e){ return true; }})();
+    const canShare = !inIframe && !!navigator.share && !!window.File;
+
+    if (canShare) {
+      try {
+        const file = new File([blob], fname, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: fname });
+          toast('✅ แชร์ PDF สำเร็จ!');
+          URL.revokeObjectURL(url);
+          return;
+        }
+      } catch(e) {
+        if (e.name === 'AbortError') { URL.revokeObjectURL(url); return; }
+      }
     }
-  }, 120);
+
+    /* Fallback: open blob URL (iOS Safari can Save to Files from here) */
+    const a = document.createElement('a');
+    a.href     = url;
+    a.download = fname;
+    a.target   = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast('📄 PDF พร้อมแล้ว! กด Share เพื่อบันทึกหรือส่งต่อ');
+
+  } catch(e) {
+    console.error(e);
+    toast('❌ ' + (e.message || 'เกิดข้อผิดพลาด'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📄 สร้าง PDF';
+  }
 }
 
 function buildFilename() {
