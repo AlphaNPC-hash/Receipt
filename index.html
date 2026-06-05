@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <title>ใบเสร็จค่าเช่า — บ้านพักวีรญา</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Serif+Thai:wght@400;600;700;900&display=swap" rel="stylesheet">
+<!-- fonts loaded via JS after document ready -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
@@ -495,11 +495,33 @@ function resetForm() {
   showToast('✅ ล้างข้อมูลแล้ว');
 }
 
-// ── BUILD CANVAS (clone → text → render) ──
+// ── LOAD FONTS INLINE (avoids cross-origin blank render) ──
+async function loadFontsInline() {
+  if (window._fontsLoaded) return;
+  // Wait for document fonts to be ready
+  if (document.fonts && document.fonts.ready) {
+    await document.fonts.ready;
+  }
+  window._fontsLoaded = true;
+}
+
+// ── BUILD CANVAS ──
 async function buildCanvas() {
+  // Ensure fonts ready
+  await loadFontsInline();
+
   const src   = document.getElementById('receipt');
+  const srcW  = src.scrollWidth;
+  const srcH  = src.scrollHeight;
+
+  // Clone
   const clone = src.cloneNode(true);
-  clone.style.cssText = 'position:fixed;top:0;left:0;width:' + src.offsetWidth + 'px;z-index:-9999;opacity:0;pointer-events:none;';
+  clone.style.cssText = [
+    'position:fixed', 'top:0', 'left:0',
+    'width:' + srcW + 'px',
+    'z-index:-9999', 'visibility:hidden', 'pointer-events:none',
+    'background:#fffdf7'
+  ].join(';');
   document.body.appendChild(clone);
 
   // inputs → spans
@@ -507,37 +529,63 @@ async function buildCanvas() {
     const span = document.createElement('span');
     span.textContent = el.value || '';
     const cs = window.getComputedStyle(el);
-    span.style.cssText = 'font-family:' + cs.fontFamily + ';font-size:' + cs.fontSize + ';font-weight:' + cs.fontWeight
-      + ';color:' + cs.color + ';display:inline;background:transparent;border:none;outline:none;';
+    span.style.cssText = 'font-family:' + cs.fontFamily
+      + ';font-size:' + cs.fontSize
+      + ';font-weight:' + cs.fontWeight
+      + ';color:' + cs.color
+      + ';display:inline;background:transparent;border:none;outline:none;padding:0;margin:0;';
     el.parentNode.replaceChild(span, el);
   });
 
   // checkboxes → symbols
   clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
-    const orig = el.id ? document.getElementById(el.id) : el;
-    const span = document.createElement('span');
-    span.textContent = orig.checked ? '☑' : '☐';
-    span.style.cssText = 'font-size:14px;color:var(--navy,#0f2a52);';
+    const orig    = el.id ? document.getElementById(el.id) : el;
+    const checked = orig ? orig.checked : el.checked;
+    const span    = document.createElement('span');
+    span.textContent = checked ? '☑' : '☐';
+    span.style.cssText = 'font-size:14px;color:#0f2a52;line-height:1;';
     el.parentNode.replaceChild(span, el);
   });
 
   // hide sig button
-  const sb = clone.querySelector('#sigBtn'); if (sb) sb.style.display = 'none';
+  const sb = clone.querySelector('#sigBtn');
+  if (sb) sb.remove();
 
   // sync sig image
-  const origImg = document.getElementById('sigImg');
+  const origImg  = document.getElementById('sigImg');
   const cloneImg = clone.querySelector('#sigImg');
   if (origImg && cloneImg) {
-    if (sigOn) { cloneImg.src = origImg.src; cloneImg.style.display = 'block'; }
-    else         cloneImg.style.display = 'none';
+    if (sigOn && origImg.src) {
+      cloneImg.src     = origImg.src;
+      cloneImg.style.display = 'block';
+    } else {
+      cloneImg.style.display = 'none';
+    }
   }
 
+  // Small delay so browser paints the clone
+  await new Promise(r => setTimeout(r, 150));
+
   try {
-    return await html2canvas(clone, {
-      scale: 3, backgroundColor: '#fffdf7',
-      useCORS: false, allowTaint: false, logging: false,
-      scrollX: 0, scrollY: 0,
+    const canvas = await html2canvas(clone, {
+      scale           : 2,
+      backgroundColor : '#fffdf7',
+      useCORS         : false,
+      allowTaint      : false,
+      logging         : false,
+      scrollX         : 0,
+      scrollY         : 0,
+      width           : srcW,
+      height          : srcH,
+      windowWidth     : srcW,
+      windowHeight    : srcH,
+      onclone         : function(doc) {
+        // Force background on receipt clone inside html2canvas shadow doc
+        const r = doc.getElementById('receipt');
+        if (r) r.style.background = '#fffdf7';
+      }
     });
+    return canvas;
   } finally {
     document.body.removeChild(clone);
   }
@@ -688,8 +736,19 @@ function setDefaults() {
                   'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
   document.getElementById('period').value = months[now.getMonth()] + ' ' + yy;
 }
-setDefaults();
-calcTotal();
+// Load fonts then init
+(async function() {
+  // Inject Google Fonts dynamically so we can wait for them
+  const link = document.createElement('link');
+  link.rel  = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Serif+Thai:wght@400;600;700;900&display=swap';
+  document.head.appendChild(link);
+  // Wait for fonts
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  window._fontsLoaded = true;
+  setDefaults();
+  calcTotal();
+})();
 </script>
 </body>
 </html>
