@@ -44,7 +44,6 @@ body{
 .btn:active{opacity:.75;}
 .btn-reset{background:#fff;color:var(--text);border:1.5px solid #aaa;}
 .btn-pdf  {background:#1a6b3a;color:#fff;}
-.btn-save {background:#7b3f00;color:#fff;}
 
 /* ═══ RECEIPT ═══ */
 #receipt{
@@ -341,11 +340,11 @@ span.ft.amt {
 </div>
 
 <!-- CONTROLS (bottom) -->
-<div style="text-align:center;font-size:10px;color:rgba(107,107,128,.5);letter-spacing:1px;margin-bottom:4px;">v1.1</div>
+<div style="text-align:center;font-size:10px;color:rgba(107,107,128,.5);letter-spacing:1px;margin-bottom:4px;">v1.2</div>
 <div class="controls">
   <button class="btn btn-reset" onclick="resetForm()">🔄 ล้างข้อมูล</button>
   <button class="btn btn-pdf"   onclick="doPrint()"    id="btnPDF">🖨️ พิมพ์</button>
-  <button class="btn btn-save"  onclick="showPreview()" id="btnSave">👁 Preview</button>
+  
 </div>
 
 <div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--navy);color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap;"></div>
@@ -440,105 +439,6 @@ const inIframe=(function(){try{return window.self!==window.top;}catch(e){return 
 const canShare=!inIframe&&!!navigator.share&&!!window.File;
 
 // ── PRINT / PDF ──
-function showPreview() {
-  // Build a clean print-ready page and open in new tab
-  // User can then print, save as PDF, or share from browser natively
-  const rec  = document.getElementById('receipt');
-  const fname = buildFilename();
-
-  // Clone and inline all values
-  const clone = rec.cloneNode(true);
-
-  // Replace inputs → text
-  clone.querySelectorAll('input[type="text"],input[type="number"]').forEach(el => {
-    const orig = el.id ? document.getElementById(el.id) : el;
-    const span = document.createElement('span');
-    span.textContent = orig ? (orig.value || '') : '';
-    const cs = window.getComputedStyle(el);
-    span.style.cssText =
-      'display:inline;font-size:'+cs.fontSize+';font-weight:'+cs.fontWeight+
-      ';color:'+cs.color+';font-family:'+cs.fontFamily+';';
-    el.parentNode.replaceChild(span, el);
-  });
-
-  // Replace checkboxes → symbols
-  clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
-    const orig = el.id ? document.getElementById(el.id) : el;
-    const span = document.createElement('span');
-    span.textContent = (orig||el).checked ? '☑' : '☐';
-    span.style.cssText = 'font-size:13px;color:#0f2a52;';
-    el.parentNode.replaceChild(span, el);
-  });
-
-  // Sig
-  const sb2 = clone.querySelector('#sigBtn'); if(sb2) sb2.remove();
-  const si = clone.querySelector('#sigImg'), so = document.getElementById('sigImg');
-  if(si && so){ if(sigOn){si.src=so.src;si.style.display='block';}else si.style.display='none'; }
-
-  // Build preview page with full styles + print button
-  const styles = Array.from(document.styleSheets).map(ss => {
-    try { return Array.from(ss.cssRules).map(r => r.cssText).join('
-'); }
-    catch(e) { return ''; }
-  }).join('
-');
-
-  const html = `<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Noto+Serif+Thai:wght@700;900&family=Parisienne&display=swap" rel="stylesheet">
-<title>${fname}</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:#ddd5c4;font-family:'Sarabun',sans-serif;padding:20px 12px 100px;}
-${styles}
-/* Override for preview */
-.controls{display:none!important;}
-body>*:not(#receipt):not(.preview-bar){display:none!important;}
-.preview-bar{
-  position:fixed;bottom:0;left:0;right:0;z-index:999;
-  background:rgba(15,42,82,.97);
-  display:flex!important;align-items:center;justify-content:center;
-  gap:12px;padding:14px 20px;
-  box-shadow:0 -4px 20px rgba(0,0,0,.3);
-}
-.preview-bar button{
-  font-family:'Sarabun',sans-serif;font-size:15px;font-weight:700;
-  padding:12px 28px;border:none;border-radius:8px;cursor:pointer;
-}
-.pb-print{background:#1a6b3a;color:#fff;}
-.pb-close{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3)!important;}
-.pb-label{color:rgba(255,255,255,.7);font-size:12px;letter-spacing:1px;}
-@media print{
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  body{background:white!important;padding:0!important;}
-  .preview-bar{display:none!important;}
-  #receipt{box-shadow:none!important;max-width:100%!important;margin:0!important;border-radius:0!important;}
-  @page{margin:8mm;size:A4 portrait;}
-}
-</style>
-</head>
-<body>
-<div id="receipt">${clone.innerHTML}</div>
-<div class="preview-bar">
-  <span class="pb-label">ตรวจสอบข้อมูลแล้ว?</span>
-  <button class="pb-print" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
-  <button class="pb-close" onclick="window.close()">✕ ปิด</button>
-</div>
-</body></html>`;
-
-  const blob = new Blob([html], { type: 'text/html' });
-  const url  = URL.createObjectURL(blob);
-  const win  = window.open(url, '_blank');
-  if (!win) {
-    toast('⚠️ กรุณาอนุญาต Popup ใน browser แล้วลองใหม่');
-  } else {
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
-    toast('👁 เปิด Preview แล้ว — กด "พิมพ์ / บันทึก PDF" ในหน้านั้นได้เลย');
-  }
-}
 
 function buildFilename() {
   const room   = (document.getElementById('roomNo').value  || '').trim();
@@ -601,20 +501,5 @@ function setDefaults(){
 setDefaults();
 calcTotal();
 </script>
-
-    <div class="step">
-      <b>ขั้นที่ 2 — iPhone/iPad</b><br>
-      
-      <span style="font-size:12px;color:#888;"></span>
-    </div>
-    <div class="step">
-      <b>หรือใช้ปุ่ม 🖨️ พิมพ์ / PDF</b><br>
-      แล้วเลือก <b>Save to Files</b><br>
-      ได้ PDF คุณภาพสูงกว่ารูปภาพครับ
-    </div>
-    <button class="close-btn" onclick="">✅ เข้าใจแล้ว — ไปที่ใบเสร็จ</button>
-  </div>
-</div>
-
 </body>
 </html>
