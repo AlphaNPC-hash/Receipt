@@ -17,7 +17,7 @@
 body{
   font-family:'Sarabun',sans-serif;
   background:#ddd5c4;
-  min-height:100vh;
+  min-height:100vh;overflow-x:hidden;
   display:flex;flex-direction:column;align-items:center;
   padding:12px 10px 80px;gap:12px;
 }
@@ -51,6 +51,7 @@ body{
   background:var(--paper);width:100%;max-width:640px;
   border-radius:4px;overflow:hidden;
   box-shadow:0 4px 20px rgba(0,0,0,.18);
+  -webkit-overflow-scrolling:touch;
 }
 .top-bar{height:6px;background:linear-gradient(90deg,var(--navy),var(--gold),var(--gold-lt),var(--navy));}
 .inner{padding:22px 24px 28px;position:relative;}
@@ -204,8 +205,6 @@ span.ft.amt {
   opacity:.85;
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -337,14 +336,16 @@ span.ft.amt {
       </div>
     </div>
 
+  <div class="wmf">เอกสารออกโดย บ้านพักวีรญา · ห้ามแก้ไขดัดแปลงโดยไม่ได้รับอนุญาต</div>
   </div>
 </div>
 
 <!-- CONTROLS (bottom) -->
+<div style="text-align:center;font-size:10px;color:rgba(107,107,128,.5);letter-spacing:1px;margin-bottom:4px;">v1.1</div>
 <div class="controls">
   <button class="btn btn-reset" onclick="resetForm()">🔄 ล้างข้อมูล</button>
   <button class="btn btn-pdf"   onclick="doPrint()"    id="btnPDF">🖨️ พิมพ์</button>
-  <button class="btn btn-save"  onclick="savePDF()"   id="btnSave">📄 สร้าง PDF</button>
+  <button class="btn btn-save"  onclick="showPreview()" id="btnSave">👁 Preview</button>
 </div>
 
 <div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--navy);color:#fff;padding:11px 22px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;transition:all .25s;pointer-events:none;z-index:999;white-space:nowrap;"></div>
@@ -439,139 +440,103 @@ const inIframe=(function(){try{return window.self!==window.top;}catch(e){return 
 const canShare=!inIframe&&!!navigator.share&&!!window.File;
 
 // ── PRINT / PDF ──
-async function savePDF() {
-  const btn = document.getElementById('btnSave');
-  btn.disabled = true; btn.textContent = '⏳ กำลังสร้าง PDF...';
+function showPreview() {
+  // Build a clean print-ready page and open in new tab
+  // User can then print, save as PDF, or share from browser natively
+  const rec  = document.getElementById('receipt');
+  const fname = buildFilename();
 
-  try {
-    const rec  = document.getElementById('receipt');
-    const fname = buildFilename() + '.pdf';
+  // Clone and inline all values
+  const clone = rec.cloneNode(true);
 
-    /* ── 1. Clone receipt ── */
-    const clone = rec.cloneNode(true);
-    clone.style.cssText = [
-      'position:fixed','top:0','left:0',
-      'width:' + rec.offsetWidth + 'px',
-      'background:#fffdf7',
-      'z-index:-9999','visibility:hidden','pointer-events:none'
-    ].join(';');
-    document.body.appendChild(clone);
+  // Replace inputs → text
+  clone.querySelectorAll('input[type="text"],input[type="number"]').forEach(el => {
+    const orig = el.id ? document.getElementById(el.id) : el;
+    const span = document.createElement('span');
+    span.textContent = orig ? (orig.value || '') : '';
+    const cs = window.getComputedStyle(el);
+    span.style.cssText =
+      'display:inline;font-size:'+cs.fontSize+';font-weight:'+cs.fontWeight+
+      ';color:'+cs.color+';font-family:'+cs.fontFamily+';';
+    el.parentNode.replaceChild(span, el);
+  });
 
-    /* ── 2. Replace inputs → spans (no tainted canvas) ── */
-    clone.querySelectorAll('input[type="text"],input[type="number"]').forEach(el => {
-      const orig = el.id ? document.getElementById(el.id) : el;
-      const val  = orig ? (orig.value || '') : '';
-      const span = document.createElement('span');
-      span.textContent = val;
-      const cs = window.getComputedStyle(el);
-      /* Force system font — avoids Google Fonts cross-origin blank */
-      span.style.cssText =
-        'display:inline;' +
-        'font-size:'    + cs.fontSize    + ';' +
-        'font-weight:'  + cs.fontWeight  + ';' +
-        'color:'        + cs.color       + ';' +
-        'font-family:Arial,Helvetica,sans-serif;' +
-        'background:transparent;border:none;padding:0;margin:0;';
-      el.parentNode.replaceChild(span, el);
-    });
+  // Replace checkboxes → symbols
+  clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
+    const orig = el.id ? document.getElementById(el.id) : el;
+    const span = document.createElement('span');
+    span.textContent = (orig||el).checked ? '☑' : '☐';
+    span.style.cssText = 'font-size:13px;color:#0f2a52;';
+    el.parentNode.replaceChild(span, el);
+  });
 
-    /* ── 3. Replace checkboxes → symbols ── */
-    clone.querySelectorAll('input[type="checkbox"]').forEach(el => {
-      const orig    = el.id ? document.getElementById(el.id) : el;
-      const checked = orig ? orig.checked : el.checked;
-      const span    = document.createElement('span');
-      span.textContent = checked ? '☑' : '☐';
-      span.style.cssText = 'font-size:13px;color:#0f2a52;font-family:Arial,sans-serif;';
-      el.parentNode.replaceChild(span, el);
-    });
+  // Sig
+  const sb2 = clone.querySelector('#sigBtn'); if(sb2) sb2.remove();
+  const si = clone.querySelector('#sigImg'), so = document.getElementById('sigImg');
+  if(si && so){ if(sigOn){si.src=so.src;si.style.display='block';}else si.style.display='none'; }
 
-    /* ── 4. Force ALL text in clone to system font ── */
-    clone.querySelectorAll('*').forEach(el => {
-      const cs = window.getComputedStyle(el);
-      if (cs.fontFamily && cs.fontFamily.includes('Sarabun')) {
-        el.style.fontFamily = 'Arial,Helvetica,sans-serif';
-      }
-      if (cs.fontFamily && (cs.fontFamily.includes('Noto') || cs.fontFamily.includes('Parisienne'))) {
-        el.style.fontFamily = 'Georgia,serif';
-      }
-    });
+  // Build preview page with full styles + print button
+  const styles = Array.from(document.styleSheets).map(ss => {
+    try { return Array.from(ss.cssRules).map(r => r.cssText).join('
+'); }
+    catch(e) { return ''; }
+  }).join('
+');
 
-    /* ── 5. Hide sig button, sync sig image ── */
-    const sb2 = clone.querySelector('#sigBtn'); if (sb2) sb2.remove();
-    const si  = clone.querySelector('#sigImg');
-    const so  = document.getElementById('sigImg');
-    if (si && so) {
-      if (sigOn) { si.src = so.src; si.style.display = 'block'; }
-      else         si.style.display = 'none';
-    }
+  const html = `<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&family=Noto+Serif+Thai:wght@700;900&family=Parisienne&display=swap" rel="stylesheet">
+<title>${fname}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#ddd5c4;font-family:'Sarabun',sans-serif;padding:20px 12px 100px;}
+${styles}
+/* Override for preview */
+.controls{display:none!important;}
+body>*:not(#receipt):not(.preview-bar){display:none!important;}
+.preview-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:999;
+  background:rgba(15,42,82,.97);
+  display:flex!important;align-items:center;justify-content:center;
+  gap:12px;padding:14px 20px;
+  box-shadow:0 -4px 20px rgba(0,0,0,.3);
+}
+.preview-bar button{
+  font-family:'Sarabun',sans-serif;font-size:15px;font-weight:700;
+  padding:12px 28px;border:none;border-radius:8px;cursor:pointer;
+}
+.pb-print{background:#1a6b3a;color:#fff;}
+.pb-close{background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3)!important;}
+.pb-label{color:rgba(255,255,255,.7);font-size:12px;letter-spacing:1px;}
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  body{background:white!important;padding:0!important;}
+  .preview-bar{display:none!important;}
+  #receipt{box-shadow:none!important;max-width:100%!important;margin:0!important;border-radius:0!important;}
+  @page{margin:8mm;size:A4 portrait;}
+}
+</style>
+</head>
+<body>
+<div id="receipt">${clone.innerHTML}</div>
+<div class="preview-bar">
+  <span class="pb-label">ตรวจสอบข้อมูลแล้ว?</span>
+  <button class="pb-print" onclick="window.print()">🖨️ พิมพ์ / บันทึก PDF</button>
+  <button class="pb-close" onclick="window.close()">✕ ปิด</button>
+</div>
+</body></html>`;
 
-    /* ── 6. Wait for paint ── */
-    await new Promise(r => setTimeout(r, 250));
-
-    /* ── 7. Render to canvas ── */
-    const canvas = await html2canvas(clone, {
-      scale          : 2,
-      backgroundColor: '#fffdf7',
-      useCORS        : false,
-      allowTaint     : false,
-      logging        : false,
-      scrollX        : 0,
-      scrollY        : 0,
-      onclone: function(doc) {
-        const r = doc.getElementById('receipt');
-        if (r) r.style.background = '#fffdf7';
-      }
-    });
-    document.body.removeChild(clone);
-
-    /* ── 8. Build PDF ── */
-    const { jsPDF } = window.jspdf;
-    const imgData   = canvas.toDataURL('image/jpeg', 0.92);
-    const a4w = 210, margin = 8, usable = a4w - margin * 2;
-    const ratio = usable / (canvas.width / 2);
-    const pdfH  = (canvas.height / 2) * ratio;
-    const doc   = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    doc.addImage(imgData, 'JPEG', margin, margin, usable, pdfH);
-
-    /* ── 9. Deliver PDF ── */
-    const blob = doc.output('blob');
-    const url  = URL.createObjectURL(blob);
-
-    /* Web Share API — iOS Share Sheet, Android Share */
-    const inIframe = (function(){ try{ return window.self!==window.top; }catch(e){ return true; }})();
-    const canShare = !inIframe && !!navigator.share && !!window.File;
-
-    if (canShare) {
-      try {
-        const file = new File([blob], fname, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: fname });
-          toast('✅ แชร์ PDF สำเร็จ!');
-          URL.revokeObjectURL(url);
-          return;
-        }
-      } catch(e) {
-        if (e.name === 'AbortError') { URL.revokeObjectURL(url); return; }
-      }
-    }
-
-    /* Fallback: open blob URL (iOS Safari can Save to Files from here) */
-    const a = document.createElement('a');
-    a.href     = url;
-    a.download = fname;
-    a.target   = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
-    toast('📄 PDF พร้อมแล้ว! กด Share เพื่อบันทึกหรือส่งต่อ');
-
-  } catch(e) {
-    console.error(e);
-    toast('❌ ' + (e.message || 'เกิดข้อผิดพลาด'));
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📄 สร้าง PDF';
+  const blob = new Blob([html], { type: 'text/html' });
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+  if (!win) {
+    toast('⚠️ กรุณาอนุญาต Popup ใน browser แล้วลองใหม่');
+  } else {
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+    toast('👁 เปิด Preview แล้ว — กด "พิมพ์ / บันทึก PDF" ในหน้านั้นได้เลย');
   }
 }
 
@@ -614,12 +579,6 @@ function doPrint(){
 
 
 
-function closeOverlayAndScroll() {
-  document.getElementById('ss-overlay').classList.remove('show');
-  // Scroll receipt into view smoothly
-  const rec = document.getElementById('receipt');
-  rec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
 
 
 // ── TOAST ──
@@ -645,16 +604,15 @@ calcTotal();
 
     <div class="step">
       <b>ขั้นที่ 2 — iPhone/iPad</b><br>
-      กด <b>ปุ่มข้างเครื่อง + ปุ่ม Volume ขึ้น</b><br>
-      พร้อมกันเพื่อ Screenshot<br>
-      <span style="font-size:12px;color:#888;">(iPhone X ขึ้นไป)</span>
+      
+      <span style="font-size:12px;color:#888;"></span>
     </div>
     <div class="step">
       <b>หรือใช้ปุ่ม 🖨️ พิมพ์ / PDF</b><br>
       แล้วเลือก <b>Save to Files</b><br>
       ได้ PDF คุณภาพสูงกว่ารูปภาพครับ
     </div>
-    <button class="close-btn" onclick="closeOverlayAndScroll()">✅ เข้าใจแล้ว — ไปที่ใบเสร็จ</button>
+    <button class="close-btn" onclick="">✅ เข้าใจแล้ว — ไปที่ใบเสร็จ</button>
   </div>
 </div>
 
